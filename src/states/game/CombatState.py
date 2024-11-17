@@ -259,7 +259,7 @@ class CombatState(BaseState):
             print("All monsters defeated! You win!")
             self.stages[self.current_stage - 1] = True
             self.current_stage += 1
-            self.coins += (self.current_stage) * 50
+            self.coins += 50
 
             g_state_manager.Change('shop', {
                 'level': self.current_stage,
