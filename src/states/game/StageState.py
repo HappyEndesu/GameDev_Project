@@ -11,24 +11,37 @@ class StageState(BaseState):
         self.bg_image = pygame.transform.scale(self.bg_image, (WIDTH, HEIGHT))
         self.stages = [] # False = uncleared, True = cleared
         self.team_characters = []
-        self.current_stage = 1
         self.coins = 0
+        self.current_stage = 1
+        self.bought_items = []
+        self.bought_weapons = []
+        self.bought_spells = []
+        self.bought_armors = []
 
     def Enter(self, params):
         print(params)
 
+        gSounds['Shop_music'].stop()
         gSounds['Select_music'].stop()
         gSounds['Stage1_music'].play(-1)
 
         for i in params:
             if i == "level":
-                self.current_stage = params[i]-1
+                self.current_stage = params[i]
             elif i == "coins":
                 self.coins = params[i]
             elif i == "stages":
                 self.stages = params[i]
             elif i == "team":
                 self.team_characters = params[i]
+            elif i == "item-list":
+                self.bought_items = params[i]
+            elif i == "weapon-list":
+                self.bought_weapons = params[i]
+            elif i == "spell-list":
+                self.bought_spells = params[i]
+            elif i == "armor-list":
+                self.bought_armors = params[i]
 
     def Exit(self):
         pass
@@ -47,7 +60,11 @@ class StageState(BaseState):
                         'level': self.current_stage,
                         'team': self.team_characters,
                         'stages': self.stages,
-                        'coins': self.coins
+                        'coins': self.coins,
+                        'item-list': self.bought_items,
+                        'weapon-list': self.bought_weapons,
+                        'spell-list': self.bought_spells,
+                        'armor-list': self.bought_armors
                     })
                     pass
 
@@ -72,7 +89,7 @@ class StageState(BaseState):
             pygame.draw.rect(screen, color, rect)
 
             # Draw outline to indicate the selected stage
-            if i == self.current_stage:
+            if i == self.current_stage - 1:
                 pygame.draw.rect(screen, (255, 255, 255), rect, 3)  # White border for current selection
 
         # Display coin count

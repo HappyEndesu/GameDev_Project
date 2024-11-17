@@ -20,7 +20,8 @@ class GameMain:
             'start': StartState(),
             'selectCharacter': SelectCharacterState(),
             'stage': StageState(),
-            'combat': CombatState() # add combat stage
+            'combat': CombatState(), # add combat stage
+            'shop': ShopState()
         }
 
         g_state_manager.SetStates(states)
