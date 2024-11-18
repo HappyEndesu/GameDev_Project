@@ -23,7 +23,7 @@ class ShopState(BaseState):
         # self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
         self.bg_image = pygame.image.load("./graphics/ShopBG.jpg")
-        self.bg_image = pygame.transform.scale(self.bg_image, (WIDTH + 5, HEIGHT + 5))
+        self.bg_image = pygame.transform.scale(self.bg_image, (WIDTH + 4, HEIGHT + 4))
 
         self.gob_img = pygame.image.load("./graphics/Gob the Seller.png")
         self.gob_img = pygame.transform.scale(self.gob_img, (300, 300))
@@ -78,6 +78,8 @@ class ShopState(BaseState):
                             # change to next stage when combined with other state
                             # pygame.quit()
                             # sys.exit()
+                            self.confirm_window = False
+                            self.confirm_window_type = -1
                             g_state_manager.Change('stage', {
                                 'level': self.current_stage,
                                 'team': self.team_characters,
@@ -154,7 +156,7 @@ class ShopState(BaseState):
                 self.gob_dialogue_type = -1
 
     def render(self, screen):
-        screen.blit(self.bg_image, (0, 0))
+        screen.blit(self.bg_image, (-2, -2))
 
         # Shop Panel
         s = pygame.Surface((600, 600), pygame.SRCALPHA)
@@ -257,48 +259,76 @@ class ShopState(BaseState):
             text_rect = text.get_rect(topleft=(740, 500))
             screen.blit(text, text_rect)
 
+            # Rarity may not be used now :(
             text = self.font_ss.render(f'Rarity: {self.get_selected()["rarity"]}', False, BLACK)
-            text_rect = text.get_rect(topleft=(740, 540))
+            text_rect = text.get_rect(topleft=(740, 530))
             screen.blit(text, text_rect)
 
+            # text = self.font_ss.render(f'User: {self.get_selected()["user"]}', False, BLACK)
+            # text_rect = text.get_rect(topleft=(740, 540))
+            # screen.blit(text, text_rect)
+
             if self.get_selected() in self.template['weapons']:
+                # User
+                text = self.font_ss.render(f'User: {self.get_selected()["user"]}', False, BLACK)
+                text_rect = text.get_rect(topleft=(740, 560))
+                screen.blit(text, text_rect)
+
+                # Dice and other stats
                 text = self.font_ss.render(
                     f'Dice: {self.get_selected()["dice"]}', False, BLACK)
                 text_rect = text.get_rect(topleft=(980, 500))
                 screen.blit(text, text_rect)
                 text = self.font_ss.render(
                     f'STR: {self.get_selected()["modify stats"]["STR"]}', False, BLACK)
-                text_rect = text.get_rect(topleft=(980, 540))
+                text_rect = text.get_rect(topleft=(980, 530))
                 screen.blit(text, text_rect)
                 text = self.font_ss.render(
                     f'ACC: {self.get_selected()["modify stats"]["ACC"]}', False, BLACK)
-                text_rect = text.get_rect(topleft=(980, 580))
+                text_rect = text.get_rect(topleft=(980, 560))
                 screen.blit(text, text_rect)
+
             elif self.get_selected() in self.template['spells']:
+                # User
+                text = self.font_ss.render(f'User: {self.get_selected()["user"]}', False, BLACK)
+                text_rect = text.get_rect(topleft=(740, 560))
+                screen.blit(text, text_rect)
+
+                # Dice and other stats
                 text = self.font_ss.render(
                     f'Dice: {self.get_selected()["dice"]}', False, BLACK)
                 text_rect = text.get_rect(topleft=(980, 500))
                 screen.blit(text, text_rect)
                 text = self.font_ss.render(
                     f'INT: {self.get_selected()["modify stats"]["INT"]}', False, BLACK)
-                text_rect = text.get_rect(topleft=(980, 540))
+                text_rect = text.get_rect(topleft=(980, 530))
                 screen.blit(text, text_rect)
                 text = self.font_ss.render(
                     f'ACC: {self.get_selected()["modify stats"]["ACC"]}', False, BLACK)
-                text_rect = text.get_rect(topleft=(980, 580))
+                text_rect = text.get_rect(topleft=(980, 560))
+                screen.blit(text, text_rect)
+                text = self.font_ss.render(
+                    f'Mana: {self.get_selected()["mana"]}', False, BLACK)
+                text_rect = text.get_rect(topleft=(980, 590))
                 screen.blit(text, text_rect)
             elif self.get_selected() in self.template['armors']:
+                # User
+                text = self.font_ss.render(f'User: {self.get_selected()["user"]}', False, BLACK)
+                text_rect = text.get_rect(topleft=(740, 560))
+                screen.blit(text, text_rect)
+
+                # Other stats
                 text = self.font_ss.render(
                     f'CON: {self.get_selected()["modify stats"]["CON"]}', False, BLACK)
                 text_rect = text.get_rect(topleft=(980, 500))
                 screen.blit(text, text_rect)
                 text = self.font_ss.render(
                     f'DEF: {self.get_selected()["modify stats"]["DEF"]}', False, BLACK)
-                text_rect = text.get_rect(topleft=(980, 540))
+                text_rect = text.get_rect(topleft=(980, 530))
                 screen.blit(text, text_rect)
                 text = self.font_ss.render(
                     f'CHA: {self.get_selected()["modify stats"]["CHA"]}', False, BLACK)
-                text_rect = text.get_rect(topleft=(980, 580))
+                text_rect = text.get_rect(topleft=(980, 560))
                 screen.blit(text, text_rect)
 
         # Display Money
@@ -306,8 +336,12 @@ class ShopState(BaseState):
         text_rect = money_text.get_rect(bottomleft=(740, 650))
         screen.blit(money_text, text_rect)
 
-        key_text = self.font_s.render(f'Z: Buy Item    X: Next Stage', False, WHITE)
-        text_rect = key_text.get_rect(topleft=(80, 680))
+        # key_text = self.font_s.render(f'Z: Buy Item    X: Next Stage', False, WHITE)
+        # text_rect = key_text.get_rect(topleft=(80, 680))
+        # screen.blit(key_text, text_rect)
+
+        key_text = self.font_s.render(f'Z: Buy Item  X: Next Stage', False, BLACK)
+        text_rect = key_text.get_rect(bottomright=(1200, 650))
         screen.blit(key_text, text_rect)
 
         if self.confirm_window:
@@ -344,11 +378,11 @@ class ShopState(BaseState):
             screen.blit(s, (720, 300))
             pygame.draw.rect(screen, BLACK, pygame.Rect(720, 300, 500, 60), 2)
             if self.gob_dialogue_type == 0:
-                text = self.font_s.render(f'Gob: Thank for buying!', False, BLACK)
+                text = self.font_s.render(f'Thank for buying!', False, BLACK)
                 text_rect = text.get_rect(center=(720 + 500 // 2, 300 + 60 // 2))
                 screen.blit(text, text_rect)
             elif self.gob_dialogue_type == 1:
-                text = self.font_s.render(f'Gob: You don\'t have enough money!', False, BLACK)
+                text = self.font_s.render(f'You don\'t have enough money!', False, BLACK)
                 text_rect = text.get_rect(center=(720 + 500 // 2, 300 + 60 // 2))
                 screen.blit(text, text_rect)
 
@@ -378,10 +412,15 @@ class ShopState(BaseState):
         return_shop[1] = random.sample(self.template['weapons'][1:], k=4)
         return_shop[2] = random.sample(self.template['spells'][1:], k=4)
         return_shop[3] = random.sample(self.template['armors'][1:], k=4)
-        print(len(self.template['items'][1:]))
-        print(len(self.template['weapons'][1:]))
-        print(len(self.template['spells'][1:]))
-        print(len(self.template['armors'][1:]))
+        # print(len(self.template['items'][1:]))
+        # print(len(self.template['weapons'][1:]))
+        # print(len(self.template['spells'][1:]))
+        # print(len(self.template['armors'][1:]))
+        # print('Knight ', len([x for x in self.template['weapons'][1:] if x["user"] == 'knight']))
+        # print('Archer ', len([x for x in self.template['weapons'][1:] if x["user"] == 'archer']))
+        # print('Barbarian ', len([x for x in self.template['weapons'][1:] if x["user"] == 'barbarian']))
+        # print('Wizard ', len([x for x in self.template['weapons'][1:] if x["user"] == 'wizard']))
+        # print('Sorcerer ', len([x for x in self.template['weapons'][1:] if x["user"] == 'sorcerer']))
         # print(json.dumps(return_shop, indent=4))
         return return_shop
 
