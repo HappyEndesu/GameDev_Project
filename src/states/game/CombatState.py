@@ -1,8 +1,9 @@
 from src.states.BaseState import BaseState
 from src.combat_utils import *
+from src.item_effects import apply_item_effect
 from character import *
 from monster.Monster import MONSTER_POOLS
-import pygame, sys, random
+import pygame, sys, random, json
 
 from src.constants import *
 from src.resources import *
@@ -28,6 +29,7 @@ class CombatState(BaseState):
         self.team_characters = []
         self.selected_weapon = None 
         self.selected_spell = None
+        self.selected_item = None
         self.spell_positions = []
         self.selected_character = 0
         self.selected_monster = 0
@@ -196,6 +198,36 @@ class CombatState(BaseState):
                             else:
                                 self.selected_monster = min(self.selected_monster, len(self.monsters) - 1)
 
+                elif self.right_panel_show == 3:  # Item selected
+                    if self.selected_item is None:
+                        print("No item selected!")
+                        self.waiting_for_player_action = True
+                        return
+                    
+                    item = self.bought_items[self.selected_item]
+                    current_character = self.characters[self.selected_character]
+                    target_enemy = self.monsters[self.selected_monster]
+
+                    if "allies" in item["on use"]:
+                        result = apply_item_effect(item, target=current_character, team=self.characters)
+                    elif "enemies" in item["on use"]: 
+                        result = apply_item_effect(item, enemies=self.monsters)
+                    elif "enemy" in item["on use"] and "coins" in item["on use"]:
+                        result = apply_item_effect(item, target=target_enemy, coins=self.coins)
+                    elif "enemy" in item["on use"] and "yourself" in item["on use"]:
+                        result = apply_item_effect(item, target=current_character, enemies=self.monsters)
+                    elif "enemy" in item["on use"]:
+                        result = apply_item_effect(item, target=target_enemy)
+                    elif "coins" in item["on use"]:
+                        result = apply_item_effect(item, target=current_character, coins=self.coins)
+                    else:
+                        result = apply_item_effect(item, target=current_character)
+    
+                    print(result)
+
+                    self.bought_items.pop(self.selected_item)
+                    self.selected_item = None
+                    
             if self.current_turn_index < len(self.characters):  # Ensure it's a character's turn
                 self.selected_character = self.current_turn_index
                 print(f"Pointer moved to character: {self.characters[self.selected_character]['name']}")
@@ -380,14 +412,16 @@ class CombatState(BaseState):
                     if i >= len(self.spell_positions):
                         self.spell_positions.append(spell_text)
 
-        elif self.right_panel_show == 3:  # Default to showing items
-            pygame.draw.rect(screen, self.PANEL_COLOR, (645, HEIGHT / 2 + 50, 600, 300))
-            char_text = gFonts['M_small'].render("ITEMS", True, self.WHITE)
-            screen.blit(char_text, (700, 430))
+        elif self.right_panel_show == 3:  # Item panel
+            if self.player_turn:
+                pygame.draw.rect(screen, self.PANEL_COLOR, (645, HEIGHT / 2 + 50, 600, 300))
+                char_text = gFonts['M_small'].render("ITEMS", True, self.WHITE)
+                screen.blit(char_text, (700, 430))
 
-            for i, item in enumerate(bought_items):
-                item_text = gFonts['M_small'].render(item['name'], True, self.WHITE)
-                screen.blit(item_text, (700, 470 + (i * 40)))
+                for i, item in enumerate(bought_items):
+                    color = self.GREEN if i == self.selected_item else self.WHITE
+                    item_text = gFonts['M_small'].render(item['name'], True, color)
+                    screen.blit(item_text, (700, 470 + (i * 40)))
 
         elif self.right_panel_show == 4:  # Escape selected
             pygame.draw.rect(screen, self.PANEL_COLOR, (645, HEIGHT / 2 + 50, 600, 300))
@@ -407,6 +441,7 @@ class CombatState(BaseState):
     def Enter(self, params):
         self.selected_weapon = None 
         self.selected_spell = None
+        self.selected_item = None
         self.spell_positions = []
         self.selected_character = 0
         self.selected_monster = 0
@@ -459,7 +494,7 @@ class CombatState(BaseState):
                     self.right_panel_show = 0
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                weapon_button, spell_button, attack_button, escape_button = self.display_action_panel(
+                weapon_button, spell_button, item_button, escape_button = self.display_action_panel(
                     g_state_manager.screen, self.selected_character
                 )
                 if weapon_button.collidepoint(event.pos):
@@ -470,9 +505,10 @@ class CombatState(BaseState):
                     print("Spell selected")
                     self.right_panel_show = 2
                     self.selected_spell = None
-                elif attack_button.collidepoint(event.pos):
-                    print("Attack selected")
+                elif item_button.collidepoint(event.pos):
+                    print("Item selected")
                     self.right_panel_show = 3
+                    self.selected_item = None
                 elif escape_button.collidepoint(event.pos):
                     print("Escape selected")
                     self.right_panel_show = 4
@@ -493,6 +529,13 @@ class CombatState(BaseState):
                         if spell_rect.collidepoint(event.pos):
                             self.selected_spell = i
                             print(f"Selected spell: {current_character['spells'][i]['name']}")
+
+                if self.right_panel_show == 3:  # Item panel is open
+                    for i, item in enumerate(self.bought_items):
+                        item_rect = pygame.Rect(700, 470 + (i * 40), 400, 30)
+                        if item_rect.collidepoint(event.pos):
+                            self.selected_item = i
+                            print(f"Selected item: {item['name']} | Description: {item['description']}")
 
                  # Handle the "I will come back" and "Just kidding" buttons
                 comeback_button, just_kidding_button = self.display_right_panel(
