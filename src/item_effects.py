@@ -67,7 +67,7 @@ def apply_item_effect(item, target, team=None, enemies=None, coins=0):
             return "No target enemy provided for the effect!"
         
         damage = roll_dice(12)
-        target["hp"] = max(target["hp"] - damage, 0)
+        target["hp"] = target["hp"] - damage
         return f"{target['name']} weakened for {damage} HP!"
     
     # Hamburger
@@ -83,7 +83,7 @@ def apply_item_effect(item, target, team=None, enemies=None, coins=0):
     # Midas Bomb
     elif effect == "Deals 3d6 damage to an enemy. If it died, gain 2d4*10 coins":
         damage = roll_dice(6) + roll_dice(6) + roll_dice(6)
-        target["hp"] = max(target["hp"] - damage, 0)
+        target["hp"] = target["hp"] - damage
         if target["hp"] <= 0:
             coins += (roll_dice(4) + roll_dice(4)) * 10
             return f"{target['name']} died! You gain {coins} coins!"
@@ -92,29 +92,29 @@ def apply_item_effect(item, target, team=None, enemies=None, coins=0):
     elif effect == "Deals 4d12 damage to enemies. Has 1 in 6 chance to deal on yourself":
         damage = roll_dice(12) + roll_dice(12) + roll_dice(12) + roll_dice(12)
         if random.randint(1, 6) == 1:
-            target["hp"] = max(target["hp"] - damage, 0)
+            target["hp"] = target["hp"] - damage
             return f"{target['name']} damaged themselves for {damage} HP!"
         else:
             if not enemies:
                 return "No enemies provided for the effect!"
 
             for enemy in enemies:
-                enemy["hp"] = max(enemy["hp"] - damage, 0)
+                enemy["hp"] = enemy["hp"] - damage
             return f"{target['name']} damaged enemies for {damage} HP!"
 
     # John's Bible
     elif effect == "Next incoming hit deals 0 damage":
-        return f"{target['name']} is immune to the next hit!" # not really
+        return f"{target['name']} is immune to the next hit! (not really)"
 
     # Endless Eight
     elif effect == "Deals 8d8 damage to an enemy. Has 1 in 8 chance to deal additional 8d8.":
         damage = roll_dice(8) + roll_dice(8) + roll_dice(8) + roll_dice(8)
         if random.randint(1, 8) == 1:
             damage += roll_dice(8) + roll_dice(8) + roll_dice(8) + roll_dice(8) + roll_dice(8) + roll_dice(8) + roll_dice(8) + roll_dice(8)
-            target["hp"] = max(target["hp"] - damage, 0)
+            target["hp"] = target["hp"] - damage
             return f"{target['name']} damaged for {damage} HP! with 1 in 8 chance"
         else:
-            target["hp"] = max(target["hp"] - damage, 0)
+            target["hp"] = target["hp"] - damage
             return f"{target['name']} damaged for {damage} HP!"
         
     # Pizza
