@@ -57,41 +57,100 @@ class SpriteManager:
         self.spriteCollection = self.loadSprites(
             [
                 "./sprite/Arrow.json",
-                "./sprite/knight.json",
-                "./sprite/wizard.json",
-                "./sprite/archer.json",
+                "./sprite/Knight.json",
+                "./sprite/Mage.json",
+                "./sprite/Archer.json",
+                "./sprite/Sorcerer.json",
+                "./sprite/Barbarian.json",
+                "./sprite/monster/Crying1.json",
+                "./sprite/monster/Crying2.json",
+                "./sprite/monster/Demon1.json",
+                "./sprite/monster/Demon2.json",
+                "./sprite/monster/Ghost1.json",
+                "./sprite/monster/Ghost2.json",
+                "./sprite/monster/Ghost3.json",
+                "./sprite/monster/Orc1.json",
+                "./sprite/monster/Orc2.json",
+                "./sprite/monster/Skeleton.json",
+                "./sprite/monster/Slime1.json",
+                "./sprite/monster/Slime2.json",
             ]
         )
 
-    def loadSprites(self, urlList):
-        resDict = {} #result dictionary
+    def loadSprites(self, urlList, shrink_scale=1):
+        resDict = {}
         for url in urlList:
             with open(url) as jsonData:
                 data = json.load(jsonData)
                 mySpritesheet = SpriteSheet(data["spriteSheetURL"])
                 dic = {}
-                for sprite in data["sprites"]:
-                    try:
-                        colorkey = sprite["colorKey"]
-                    except KeyError:
-                        colorkey = None
-                    try:
-                        xSize = sprite['xsize']
-                        ySize = sprite['ysize']
-                    except KeyError:
-                        xSize, ySize = data['size']
-                    dic[sprite["name"]] = Sprite(
-                        mySpritesheet.image_at(
-                            sprite["x"],
-                            sprite["y"],
-                            sprite["scalefactor"],
-                            colorkey,
-                            xTileSize=xSize,
-                            yTileSize=ySize,
+
+                if data["type"] == "animation":
+                    for sprite in data["sprites"]:
+                        images = []
+                        for image in sprite["images"]:
+                            try:
+                                xSize = sprite['xsize']
+                                ySize = sprite['ysize']
+                            except KeyError:
+                                xSize, ySize = data['size']
+                            images.append(
+                                mySpritesheet.image_at(
+                                    image["x"],
+                                    image["y"],
+                                    image["scalefactor"],
+                                    colorkey=-1, #sprite["colorKey"],
+                                    xTileSize=xSize,
+                                    yTileSize=ySize,
+                                )
+                            )
+                        try:
+                            idle_info = sprite['idle_image']
+                            idle_img = mySpritesheet.image_at(
+                                idle_info["x"],
+                                idle_info["y"],
+                                idle_info["scale"],
+                                colorkey=-1,
+                                xTileSize=xSize,
+                                yTileSize=ySize
+                            )
+                        except KeyError:
+                            idle_img = None
+                        try:
+                            loop = sprite['loop']
+                        except KeyError:
+                            loop = True
+
+                        dic[sprite["name"]] = Sprite(
+                            None,
+                            animation=Animation(images, idleSprite=idle_img, looping=loop, interval_time=sprite["interval_time"]),
                         )
-                    )
-                resDict.update(dic)
-                continue
+
+                    resDict.update(dic)
+                    continue
+                else:
+                    for sprite in data["sprites"]:
+                        try:
+                            colorkey = sprite["colorKey"]
+                        except KeyError:
+                            colorkey = None
+                        try:
+                            xSize = sprite['xsize']
+                            ySize = sprite['ysize']
+                        except KeyError:
+                            xSize, ySize = data['size']
+                        dic[sprite["name"]] = Sprite(
+                            mySpritesheet.image_at(
+                                sprite["x"],
+                                sprite["y"],
+                                sprite["scalefactor"],#//shrink_scale,
+                                colorkey,
+                                xTileSize=xSize,
+                                yTileSize=ySize,
+                            ),
+                        )
+                    resDict.update(dic)
+                    continue
         return resDict
 
 class SpriteSheet(object):

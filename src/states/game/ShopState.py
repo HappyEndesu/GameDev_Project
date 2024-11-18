@@ -64,7 +64,10 @@ class ShopState(BaseState):
         with open('./items.json', 'r') as f:
             self.template = json.load(f)
 
-        self.shop_list = self.random_shop()
+        self.shop_list = [[{}, {}, {}, {}],
+                          [{}, {}, {}, {}],
+                          [{}, {}, {}, {}],
+                          [{}, {}, {}, {}]]
 
     def update(self, dt, events):
         for event in events:
@@ -378,7 +381,7 @@ class ShopState(BaseState):
             screen.blit(s, (720, 300))
             pygame.draw.rect(screen, BLACK, pygame.Rect(720, 300, 500, 60), 2)
             if self.gob_dialogue_type == 0:
-                text = self.font_s.render(f'Thank for buying!', False, BLACK)
+                text = self.font_s.render(f'Thanks for buying!', False, BLACK)
                 text_rect = text.get_rect(center=(720 + 500 // 2, 300 + 60 // 2))
                 screen.blit(text, text_rect)
             elif self.gob_dialogue_type == 1:
@@ -389,6 +392,8 @@ class ShopState(BaseState):
     def Enter(self, params):
         gSounds['Stage1_music'].stop()
         gSounds['Shop_music'].play(-1)
+
+        self.shop_list = self.random_shop()
 
         for i in params:
             if i == "level":
